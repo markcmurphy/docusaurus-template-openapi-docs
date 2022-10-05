@@ -1,0 +1,43 @@
+---
+id: create-an-order
+title: "Create an Order"
+description: "Creates an order.
+
+## Usage notes
+* Orders created will be set to incomplete order status.
+* You can create as many orders from the same order(cart) as you want.
+* Order duplication creates the same order with a new order number with the incomplete status.
+* Once the order is paid, then the cart is deleted.
+* Cart deletion occurs if you are using BigCommerce to accept payments on orders."
+sidebar_label: Create an Order
+hide_title: true
+hide_table_of_contents: true
+api: {"tags":["Checkout Orders"],"description":"Creates an order.\n\n## Usage notes\n* Orders created will be set to incomplete order status.\n* You can create as many orders from the same order(cart) as you want.\n* Order duplication creates the same order with a new order number with the incomplete status.\n* Once the order is paid, then the cart is deleted.\n* Cart deletion occurs if you are using BigCommerce to accept payments on orders.","operationId":"createAnOrder","parameters":[{"name":"store_hash","in":"path","required":true,"schema":{"type":"string"}},{"name":"Accept","in":"header","required":true,"schema":{"type":"string","default":"application/json"}},{"name":"Content-Type","in":"header","required":true,"schema":{"type":"string","default":"application/json"}},{"name":"checkoutId","in":"path","description":"ID of the checkout (same as the cart ID).","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"","content":{"application/json":{"schema":{"type":"object","properties":{"data":{"title":"Order","type":"object","properties":{"id":{"type":"integer","description":"The order Id.","example":75}},"x-internal":false},"meta":{"type":"object","properties":{}}}},"example":{"data":{"id":75},"meta":{}}}}}},"security":[{"X-Auth-Token":[]}],"method":"post","path":"/stores/{store_hash}/v3/checkouts/{checkoutId}/orders","servers":[{"url":"https://api.bigcommerce.com"}],"securitySchemes":{"X-Auth-Token":{"type":"apiKey","description":"","name":"X-Auth-Token","in":"header"}},"info":{"title":"Checkouts","description":"For more information on authenticating BigCommerce APIs, see [Authentication](/api-docs/getting-started/authentication).\n\nCreate and manage checkouts from existing carts using BigCommerce checkout logic.","version":"3.0"},"postman":{"name":"Create an Order","description":{"content":"Creates an order.\n\n## Usage notes\n* Orders created will be set to incomplete order status.\n* You can create as many orders from the same order(cart) as you want.\n* Order duplication creates the same order with a new order number with the incomplete status.\n* Once the order is paid, then the cart is deleted.\n* Cart deletion occurs if you are using BigCommerce to accept payments on orders.","type":"text/plain"},"url":{"path":["stores",":store_hash","v3","checkouts",":checkoutId","orders"],"host":["{{baseUrl}}"],"query":[],"variable":[{"disabled":false,"description":{"content":"(Required) ","type":"text/plain"},"type":"any","value":"","key":"store_hash"},{"disabled":false,"description":{"content":"(Required) ID of the checkout (same as the cart ID).","type":"text/plain"},"type":"any","value":"","key":"checkoutId"}]},"header":[{"key":"Accept","value":"application/json"}],"method":"POST","auth":{"type":"apikey","apikey":[{"type":"any","value":"X-Auth-Token","key":"key"},{"type":"any","value":"<API Key>","key":"value"},{"type":"any","value":"header","key":"in"}]}}}
+sidebar_class_name: "post api-method"
+info_path: docs/checkouts/checkouts
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem"
+import SchemaTabs from "@theme/SchemaTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import TabItem from "@theme/TabItem";
+
+## Create an Order
+
+
+
+Creates an order.
+
+## Usage notes
+* Orders created will be set to incomplete order status.
+* You can create as many orders from the same order(cart) as you want.
+* Order duplication creates the same order with a new order number with the incomplete status.
+* Once the order is paid, then the cart is deleted.
+* Cart deletion occurs if you are using BigCommerce to accept payments on orders.
+
+<details style={{"marginBottom":"1rem"}} data-collapsed={false} open={true}><summary style={{}}><strong>Path Parameters</strong></summary><div><ul><ParamsItem className={"paramsItem"} param={{"name":"store_hash","in":"path","required":true,"schema":{"type":"string"}}}></ParamsItem><ParamsItem className={"paramsItem"} param={{"name":"checkoutId","in":"path","description":"ID of the checkout (same as the cart ID).","required":true,"schema":{"type":"string"}}}></ParamsItem></ul></div></details><details style={{"marginBottom":"1rem"}} data-collapsed={false} open={true}><summary style={{}}><strong>Header Parameters</strong></summary><div><ul><ParamsItem className={"paramsItem"} param={{"name":"Accept","in":"header","required":true,"schema":{"type":"string","default":"application/json"}}}></ParamsItem><ParamsItem className={"paramsItem"} param={{"name":"Content-Type","in":"header","required":true,"schema":{"type":"string","default":"application/json"}}}></ParamsItem></ul></div></details><div><ApiTabs><TabItem label={"200"} value={"200"}><div></div><div><MimeTabs groupId={"mime-type"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs groupId={"schema-tabs"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} data-collapsed={false} open={true}><summary style={{"textAlign":"left"}}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}}><summary style={{}}><strong>data</strong><span style={{"opacity":"0.6"}}> object</span></summary><div style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"id"} required={false} schemaDescription={"The order Id."} schemaName={"integer"} qualifierMessage={undefined} defaultValue={undefined}></SchemaItem></div></details></SchemaItem><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}}><summary style={{}}><strong>meta</strong><span style={{"opacity":"0.6"}}> object</span></summary><div style={{"marginLeft":"1rem"}}></div></details></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"data\": {\n    \"id\": 0\n  },\n  \"meta\": {}\n}"} language={"json"}></ResponseSamples></TabItem><TabItem label={"Example"} value={"Example"}><ResponseSamples responseExample={"{\n  \"data\": {\n    \"id\": 75\n  },\n  \"meta\": {}\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div>
+      

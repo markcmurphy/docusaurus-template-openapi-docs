@@ -1,0 +1,363 @@
+openapi: 3.0.1
+info:
+  title: Redirects
+  description: |-
+    Manage 301 redirects for one or more storefronts powered by a single BigCommerce back-end.
+
+    ## Authentication
+
+    Requests can be authenticated by sending an `access_token` via `X-Auth-Token` HTTP header:
+
+    ```http
+    GET /stores/{store_hash}/v3/catalog/summary
+    host: api.bigcommerce.com
+    Accept: application/json
+    X-Auth-Token: {access_token}
+    ```
+
+    |Header|Parameter|Description|
+    |-|-|-|
+    |`X-Auth-Token`|`access_token `|Obtained by creating an API account or installing an app in a BigCommerce control panel.|
+
+    For more information on Authenticating BigCommerce APIs, see: [Authentication](/api-docs/getting-started/authentication).
+  version: ''
+servers:
+  - url: 'https://api.bigcommerce.com'
+security:
+  - X-Auth-Token: []
+tags:
+  - name: Redirects
+paths:
+  '/stores/{store_hash}/v3/storefront/redirects':
+    get:
+      tags:
+        - Redirects
+      summary: Get Redirects
+      description: Returns a collection of the store's 301 redirects across all sites.
+      operationId: GetRedirects
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: site_id
+          in: query
+          description: Filters items by `site_id`.
+          schema:
+            type: integer
+        - name: 'id:in'
+          in: query
+          description: Filters items by redirect `id`. Also accepts comma-separated values to filter for multiple redirects.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: Controls the number of items to return per page.
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Specifies the page number in a limited (paginated) list of items. Used to paginate large collections.
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: |
+            Field name to sort by. Note: Since redirect `id` increments when new redirects are added, you can use that field to sort by redirect create date.
+          schema:
+            type: string
+            enum:
+              - from_path
+              - type
+              - site_id
+        - name: direction
+          in: query
+          description: 'Sort direction. Acceptable values are `asc`, `desc`.'
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: include
+          in: query
+          description: Indicates whether to include redirect sub-resources. Only `to_url` is supported.
+          schema:
+            type: string
+            enum:
+              - to_url
+        - name: keyword
+          in: query
+          description: 'Filters redirects by the specified keyword. Will only search from the beginning of a URL path. For example, `blue` will match `/blue` and `/blue-shirt` ,  **not** `/royal-blue-shirt`.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/301RedirectRead'
+                  meta:
+                    $ref: '#/components/schemas/MetaPaginationObject'
+    put:
+      tags:
+        - Redirects
+      summary: Upsert Redirects
+      description: Upserts new redirect data across all storefronts.
+      operationId: UpsertRedirects
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/301RedirectUpsert'
+        required: false
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/301RedirectRead'
+                  meta:
+                    $ref: '#/components/schemas/MetaPaginationObject'
+    delete:
+      tags:
+        - Redirects
+      summary: Delete Redirects
+      description: Deletes redirects.
+      operationId: DeleteRedirects
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: 'id:in'
+          in: query
+          description: List of Redirect IDs to delete explicitly
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - name: site_id
+          in: query
+          description: Site ID provided to delete all redirects for a given Site
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+          content: {}
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+      x-internal: false
+    ErrorResponse400:
+      type: object
+      properties:
+        schema:
+          $ref: '#/components/schemas/Error'
+      x-internal: false
+    ErrorResponse404:
+      type: object
+      properties:
+        schema:
+          $ref: '#/components/schemas/Error'
+      x-internal: false
+    ErrorResponse409:
+      type: object
+      properties:
+        schema:
+          $ref: '#/components/schemas/Error'
+      x-internal: false
+    ErrorResponse422:
+      type: object
+      properties:
+        schema:
+          $ref: '#/components/schemas/Error'
+      x-internal: false
+    301RedirectUpsert:
+      required:
+        - from_path
+        - site_id
+      type: object
+      properties:
+        from_path:
+          type: string
+          example: /old-url/
+        site_id:
+          type: integer
+        to:
+          $ref: '#/components/schemas/RedirectTo'
+      description: 'Data necessary to create or update a redirect. If there’s a conflict on the from_path and site_id, the redirect will be overwritten with new data.'
+      x-internal: false
+    301RedirectRead:
+      type: object
+      description: 'Full detail of a Redirect, optionally including the full destination URL.'
+      x-internal: false
+      properties:
+        id:
+          type: integer
+        site_id:
+          type: integer
+        from_path:
+          type: string
+          example: /old-url
+        to:
+          $ref: '#/components/schemas/RedirectTo'
+        to_url:
+          type: string
+          description: Full destination URL for the redirect. Must be explicitly included via URL parameter.
+          format: uri
+          example: 'https://store-domain.com/new-url'
+    MetaPaginationObject:
+      type: object
+      properties:
+        pagination:
+          type: object
+          properties:
+            total:
+              minimum: 0
+              type: integer
+              example: 246
+            count:
+              minimum: 0
+              type: integer
+              example: 5
+            per_page:
+              minimum: 0
+              type: integer
+              example: 5
+            current_page:
+              minimum: 1
+              type: integer
+              example: 1
+            total_pages:
+              minimum: 0
+              type: integer
+              example: 50
+            links:
+              type: object
+              properties:
+                next:
+                  type: string
+                  example: '?limit=5&page=2'
+                current:
+                  type: string
+                  example: '?limit=5&page=1'
+      x-internal: false
+    RedirectTo:
+      title: RedirectTo
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - product
+            - brand
+            - category
+            - page
+            - post
+            - url
+        entity_id:
+          type: integer
+        url:
+          maxLength: 2048
+          type: string
+          example: /new-url/
+      x-internal: false
+    DetailedErrors:
+      type: object
+      additionalProperties:
+        type: string
+      x-internal: false
+    BaseError:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: |
+            The HTTP status code.
+        title:
+          type: string
+          description: |
+            The error title describing the particular error.
+        type:
+          type: string
+        instance:
+          type: string
+      description: |
+        Error payload for the BigCommerce API.
+      x-internal: false
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseError'
+        - type: object
+          properties:
+            errors:
+              $ref: '#/components/schemas/DetailedErrors'
+      x-internal: false
+  securitySchemes:
+    X-Auth-Token:
+      type: apiKey
+      description: |-
+        ### OAuth Scopes
+        |  **UI Name** | **Permission** | **Parameter** |
+        | --- | --- | --- |
+        |  Content | modify | `store_v2_content` |
+        |  Content | read-only | `store_v2_content_read_only` |
+
+        ### Headers
+
+        |Header|Parameter|Description|
+        |-|-|-|
+        |`X-Auth-Token`|`access_token `|Obtained by creating an API account or installing an app in a BigCommerce control panel.|
+
+        ### Example
+
+        ```http
+        GET /stores/{store_hash}/v3/catalog/summary
+        host: api.bigcommerce.com
+        Content-Type: application/json
+        X-Auth-Token: {access_token}
+        ```
+
+        * For more information on Authenticating BigCommerce APIs, see: [Authentication](/api-docs/getting-started/authentication).
+      name: X-Auth-Token
+      in: header
+x-stoplight:
+  docs:
+    includeDownloadLink: true
+    showModels: false

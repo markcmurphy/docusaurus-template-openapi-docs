@@ -1,0 +1,43 @@
+---
+id: customers-delete
+title: "Delete Customers"
+description: "Deletes Customers.
+
+**Required Query**
+* id:in -- ID of the customer
+
+**Notes**
+
+A query is required to delete customers. If not provided, a 204 is returned, with no changes to the data."
+sidebar_label: Delete Customers
+hide_title: true
+hide_table_of_contents: true
+api: {"description":"Deletes Customers.\n\n**Required Query**\n* id:in -- ID of the customer\n\n**Notes**\n\nA query is required to delete customers. If not provided, a 204 is returned, with no changes to the data.","tags":["Customers"],"operationId":"CustomersDelete","deprecated":false,"parameters":[{"in":"query","name":"id:in","description":"Filter items by ID.\n`id:in=4,5,6`","required":true,"style":"form","explode":false,"schema":{"type":"array","items":{"type":"integer"}}}],"responses":{"204":{"description":"","headers":{}}},"method":"delete","path":"/stores/{store_hash}/v3/customers","servers":[{"url":"https://api.bigcommerce.com","variables":{"store_hash":{"default":"store_hash"}}}],"security":[{"X-Auth-Token":[]}],"securitySchemes":{"X-Auth-Token":{"type":"apiKey","name":"X-Auth-Token","in":"header"}},"info":{"version":"","title":"Customers V3","description":"Create and manage customers.\n\n## Authentication\n\nAuthenticate requests by passing an API account `access_token` in the `X-Auth-Token` HTTP header:\n\n```http\nGET /stores/{{STORE_HASH}}/v3/customers\nhost: api.bigcommerce.com\nAccept: application/json\nX-Auth-Token: {{ACCESS_TOKEN}}\n```\n\n| Header | Parameter | Description |\n|:-------|:----------|:------------|\n| `X-Auth-Token` | `access_token` | Obtained by creating an API account or installing an app in a BigCommerce control panel. |\n\n### OAuth Scopes\n\n| UI Name                                      | Permission | Parameter                                     |\n|:---------------------------------------------|:-----------|:----------------------------------------------|\n| Customers                                    | modify     | `store_v2_customers`                          |\n| Customers                                    | read-only  | `store_v2_customers_read_only`                |\n| Stored Payment Instruments                   | modify     | `store_stored_payment_instruments`            |\n| Stored Payment Instruments                   | read-only  | `store_stored_payment_instruments_read_only`  |\n\nFor more information on Authenticating BigCommerce APIs, see: [Authentication](/api-docs/getting-started/authentication).\n\n## Resources\n* [Customer and Subscribers Overview](/api-docs/store-management/customers).","contact":{}},"postman":{"name":"Delete Customers","description":{"content":"Deletes Customers.\n\n**Required Query**\n* id:in -- ID of the customer\n\n**Notes**\n\nA query is required to delete customers. If not provided, a 204 is returned, with no changes to the data.","type":"text/plain"},"url":{"path":["stores",":store_hash","v3","customers"],"host":["{{baseUrl}}"],"query":[{"disabled":false,"description":{"content":"(Required) Filter items by ID.\n`id:in=4,5,6`","type":"text/plain"},"key":"id:in","value":""}],"variable":[{"disabled":false,"description":{"content":"(Required) ","type":"text/plain"},"type":"any","value":"","key":"store_hash"}]},"method":"DELETE"}}
+sidebar_class_name: "delete api-method"
+info_path: docs/customers/customers-v-3
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem"
+import SchemaTabs from "@theme/SchemaTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import TabItem from "@theme/TabItem";
+
+## Delete Customers
+
+
+
+Deletes Customers.
+
+**Required Query**
+* id:in -- ID of the customer
+
+**Notes**
+
+A query is required to delete customers. If not provided, a 204 is returned, with no changes to the data.
+
+<details style={{"marginBottom":"1rem"}} data-collapsed={false} open={true}><summary style={{}}><strong>Query Parameters</strong></summary><div><ul><ParamsItem className={"paramsItem"} param={{"in":"query","name":"id:in","description":"Filter items by ID.\n`id:in=4,5,6`","required":true,"style":"form","explode":false,"schema":{"type":"array","items":{"type":"integer"}}}}></ParamsItem></ul></div></details><div><ApiTabs><TabItem label={"204"} value={"204"}><div></div><details style={{"textAlign":"left","marginBottom":"1rem"}} data-collaposed={true} open={false}><summary style={{}}><strong>Response Headers</strong></summary><ul style={{"marginLeft":"1rem"}}></ul></details><div></div></TabItem></ApiTabs></div>
+      

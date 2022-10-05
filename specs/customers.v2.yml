@@ -1,0 +1,2061 @@
+openapi: 3.0.1
+info:
+  title: Customers V2
+  contact: {}
+  description: |-
+    Create and Manage Customers, Customer Addresses, and Customer Groups. Additionally, validate customer passwords. To learn more about Customers see [here](/api-docs/customers/customers-subscribers-overview). 
+    ## Authentication
+    Requests can be authenticated by sending an `access_token` via `X-Auth-Token` HTTP header:
+    ```http
+    GET /stores/{store_hash}/v3/catalog/summary
+    host: api.bigcommerce.com
+    Accept: application/json
+    X-Auth-Token: {access_token}
+    ```
+    |Header|Parameter|Description|
+    |-|-|-|
+    |`X-Auth-Token`|`access_token `|Obtained by creating an API account or installing an app in a BigCommerce control panel.|
+    ### OAuth Scopes
+    | UI Name                                      | Permission | Parameter                                     |
+    |----------------------------------------------|------------|-----------------------------------------------|
+    | Customers                                    | modify     | `store_v2_customers`                          |
+    | Customers                                    | read-only  | `store_v2_customers_read_only`                |
+    For more information on Authenticating BigCommerce APIs, see: [Authentication](/api-docs/getting-started/authentication).
+    ## Available Endpoints
+    | Resource / Endpoint                     | Description                                                                   |
+    |-----------------------------------------|-------------------------------------------------------------------------------|
+    | Customers                               | Identity and account details for customers shopping on BigCommerce stores     |
+    | Customers Addresses                     | Postal address belonging to a customer.                                       |
+    | Customers Groups                        | Groupings of customers who share the same level of access and discounts       |
+    | Customers Validate Password             | Validate customer passwords                                                   |
+    ## Usage Notes
+    **Customer Groups**
+    * Customer Groups are only available on specific plans.
+    **Customers vs. Subscribers**
+    * A subscriber is not always a customer. Someone can sign up for the newsletter only and not create an account.
+    * A customer is not always a subscriber. Signing up for the newsletter is a separate action from creating an account and purchasing an item.
+    * A customer and a subscriber can be the same. If a shopper checks out on the storefront, creates an account and opts into the newsletter, they are a customer and a subscriber.
+    ## Resources
+    ### Related APIs / Endpoints
+      [Customer Login API](/api-docs/customers/customer-login-api)
+    - [Current Customer API](/api-docs/customers/current-customer-api)
+    - [Customers API (v3)](/api-reference/customer-subscribers/v3-customers-api)
+    - [Subscribers API](/api-reference/customer-subscribers/subscribers-api)
+    ### Webhooks
+    - [Customers](/api-docs/store-management/webhooks/webhook-events#customer)
+  version: ''
+servers:
+  - url: 'https://api.bigcommerce.com'
+security:
+  - X-Auth-Token: []
+tags:
+  - name: Customers
+  - name: Customer Groups
+  - name: Customer Addresses
+  - name: Customer Passwords
+paths:
+  '/stores/{store_hash}/v2/customers':
+    get:
+      tags:
+        - Customers
+      summary: Get All Customers
+      description: 'Returns a list of all *Customers*. Default sorting is by customer id, from lowest to highest. Optional parameters can be passed in.'
+      operationId: getAllCustomers
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: first_name
+          in: query
+          schema:
+            type: string
+        - name: last_name
+          in: query
+          schema:
+            type: string
+        - name: company
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+        - name: phone
+          in: query
+          schema:
+            type: string
+        - name: store_credit
+          in: query
+          schema:
+            type: string
+        - name: customer_group_id
+          in: query
+          schema:
+            type: integer
+        - name: min_id
+          in: query
+          schema:
+            type: integer
+        - name: max_id
+          in: query
+          schema:
+            type: integer
+        - name: min_date_created
+          in: query
+          schema:
+            type: string
+        - name: max_date_created
+          in: query
+          schema:
+            type: string
+        - name: min_date_modified
+          in: query
+          schema:
+            type: string
+        - name: max_date_modified
+          in: query
+          schema:
+            type: string
+        - name: tax_exempt_category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customer_Full'
+      deprecated: true
+    post:
+      tags:
+        - Customers
+      summary: Create a New Customer
+      description: |-
+        Creates a *Customer*.
+        **Required Fields**
+        *   `first_name`
+        *   `last_name`
+        *   `email`
+        **Read Only Fields**
+        *   `id`
+        *   `date_created`
+        *   `date_modified`
+        *   `accepts_marketing`
+        *   `addresses`
+        *   `form_fields`
+        ## Notes 
+        The `_authentication` object exposes functionality associated with the customer’s ability to log in to the store. All properties of the `_authentication` object are optional.
+        When the `_authentication` object is not supplied with an update request, then the existing customer password remains the same.
+        ## Updating Passwords 
+        To manually update a customer password in the same way as the control panel, supply a value for the password field:
+        ```json
+        {
+            "_authentication": {
+                "password": "12w69Y217PYR96J"
+            }
+        }
+        ```
+        ## Confirming Passwords 
+        An additional optional `password_confirmation` field can also be sent, providing password confirmation as a service:
+        ```json
+        {
+            "_authentication": {
+               "password": "12w69Y217PYR96J",
+               "password_confirmation": "12w69Y217PYR96J"
+            }
+        }
+        ```
+        ## Forcing Password Resets 
+        To force a customer to reset their password upon their next login attempt, give the `force_reset` field a value of true, as shown here:
+        ```json
+        {
+            "_authentication": {
+                "force_reset": true
+            }
+        }
+      operationId: createANewCustomer
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _authentication:
+                  type: object
+                  properties: {}
+                  description: 'This can vary depending on the action being taken to update, validate or force a password change. See Update Customer'
+                company:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone:
+                  type: string
+                date_modified:
+                  type: string
+                store_credit:
+                  type: integer
+                registration_ip_address:
+                  type: string
+                customer_group_id:
+                  type: integer
+                notes:
+                  type: string
+                tax_exempt_category:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer_Full'
+      deprecated: true
+    delete:
+      tags:
+        - Customers
+      summary: Delete Customers
+      description: 'By default, it deletes all *Customers*. Up to 100 customers per batch can be deleted. '
+      operationId: deleteAllCustomers
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '204':
+          description: ''
+          content: {}
+      deprecated: true
+      x-unitTests:
+        - request:
+            method: DELETE
+            uri: '/stores/{store_hash}/v2/customers'
+            headers:
+              Accept: application/json
+              Content-Type: application/json
+              X-Auth-Token: Your Token
+          expectedResponse:
+            x-allowExtraHeaders: true
+            x-bodyMatchMode: NONE
+            x-arrayOrderedMatching: false
+            x-arrayCheckCount: false
+            x-matchResponseSchema: true
+            headers:
+              Content-Type: application/json
+          x-testShouldPass: true
+          x-testEnabled: true
+          x-testName: Delete All Customers1
+          x-testDescription: Deletes all customers
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  '/stores/{store_hash}/v2/customers/{customer_id}':
+    get:
+      tags:
+        - Customers
+      summary: Get a Customer
+      description: Returns a single *Customer*.
+      operationId: getACustomer
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Unique numeric ID of this customer.
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer_Full'
+      deprecated: true
+    put:
+      tags:
+        - Customers
+      summary: Update a Customer
+      description: |-
+        Updates a *Customer*.
+        **Read Only Fields**
+        *   id
+        *   date_created
+        *   date_modified
+        *   accepts_marketing
+        *   addresses
+        *   form_fields
+        ## Notes 
+        The `_authentication` object exposes functionality associated with the customer’s ability to log in to the store. All properties of the `_authentication` object are optional.
+        When the `_authentication` object is not supplied with an update request, then the existing customer password remains the same.
+        ## Updating Passwords 
+        To manually update a customer password in the same way as the control panel, supply a value for the `password` field:
+        ```
+        {
+            "_authentication": {
+                "password": "12w69Y217PYR96J"
+            }
+        }
+        ```
+        #### Confirming Passwords 
+        An additional optional `password_confirmation` field can also be sent, providing password confirmation as a service:
+        ```
+        {
+            "_authentication": {
+               "password": "12w69Y217PYR96J"
+               "password_confirmation": "12w69Y217PYR96J"
+            }
+        }
+        ```
+        #### Forcing Password Resets 
+        To force a customer to reset their password upon their next login attempt, give the `force_reset` field a value of true, as shown here:
+        ```
+        {
+            "_authentication": {
+                "force_reset": true
+            }
+        }
+        ```
+      operationId: updateACustomer
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Id of the customer
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+            default: application/json
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Customers
+              required:
+                - email
+                - first_name
+                - last_name
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Unique numeric ID of this customer. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+                  example: 1
+                _authentication:
+                  type: object
+                  properties:
+                    force_reset:
+                      type: boolean
+                    password:
+                      type: string
+                    password_confirmation:
+                      type: string
+                  description: 'Not returned in any responses, but accepts up to two fields allowing you to set the customer’s password. If a password is not supplied, it is generated automatically. For further information about using this object, please see the Customers resource documentation.'
+                company:
+                  type: string
+                  description: The name of the company for which the customer works.
+                  example: BigCommerce
+                first_name:
+                  type: string
+                  description: First name of the customer.
+                  example: Jane
+                last_name:
+                  type: string
+                  description: Last name of the customer.
+                  example: Doe
+                email:
+                  type: string
+                  description: Email address of the customer.
+                  example: janedoe@example.com
+                phone:
+                  type: string
+                  description: Phone number of the customer.
+                  example: '1234567890'
+                date_created:
+                  type: string
+                  description: Date on which the customer registered from the storefront or was created in the control panel. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+                date_modified:
+                  type: string
+                  description: |
+                    Date on which the customer updated their details in the storefront or was updated in the control panel. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+                store_credit:
+                  type: string
+                  description: 'The amount of credit the customer has. (Float, Float as String, Integer)'
+                  example: '0'
+                registration_ip_address:
+                  type: string
+                  description: The customer’s IP address when they signed up.
+                  example: 12.345.678.910
+                customer_group_id:
+                  type: integer
+                  description: The group to which the customer belongs.
+                  example: 2
+                notes:
+                  type: string
+                  description: Store-owner notes on the customer.
+                tax_exempt_category:
+                  type: string
+                  description: 'If applicable, the tax-exempt category of the shopper’s customer account. You can apply a tax-exempt category to multiple customers. This code should match the exemption codes provided by the third-party integration. '
+                accepts_marketing:
+                  type: boolean
+                  description: 'If the customer accepts product review emails or abandon cart emails. Read-Only. '
+                  readOnly: true
+                  example: true
+                addresses:
+                  title: Address Field Resource
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      description: Full URL of where the resource is located.
+                      example: 'https://api.bigcommerce.com/stores/{store_hash}/v2/customers/5/addresses'
+                    resource:
+                      type: string
+                      description: Resource being accessed.
+                      example: /customers/5/addresses
+                form_fields:
+                  type: array
+                  description: Array of custom fields. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+                  items:
+                    title: Form Fields
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the form field
+                        example: License Id
+                      value:
+                        type: string
+                        description: Value of the form field
+                        example: 123BAF
+                reset_pass_on_login:
+                  type: boolean
+                  description: Force a password change on next login.
+                  example: false
+        required: false
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer_Base'
+      deprecated: true
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+        - Customers
+      summary: Delete a Customer
+      description: Deletes a *Customer*.
+      operationId: deleteACustomer
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Id of the customer
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '204':
+          description: ''
+          content: {}
+      deprecated: true
+  '/stores/{store_hash}/v2/customers/count':
+    get:
+      tags:
+        - Customers
+      summary: Get a Count of Customers
+      description: 'Returns a count of all *Customers*. '
+      operationId: getACountOfCustomers
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/count_Full'
+              example:
+                count: 27
+      deprecated: true
+      x-unitTests:
+        - request:
+            method: GET
+            uri: '/stores/{store_hash}/v2/customers/count'
+            headers:
+              Accept: application/json
+              Content-Type: application/json
+              X-Auth-Token: Your Token
+          expectedResponse:
+            x-allowExtraHeaders: true
+            x-bodyMatchMode: RAW
+            x-arrayOrderedMatching: false
+            x-arrayCheckCount: false
+            x-matchResponseSchema: true
+            headers:
+              Content-Type: application/json
+            body: '{  "count": 27}'
+          x-testShouldPass: true
+          x-testEnabled: true
+          x-testName: Get a Count of Customers1
+          x-testDescription: Gets a count of the total number of customers in the store.
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  '/stores/{store_hash}/v2/customers/{customer_id}/validate':
+    post:
+      tags:
+        - Customer Passwords
+      summary: Validate a Password
+      description: |-
+        **This endpoint has special rate limiting protections to protect against abuse.**
+
+        Provided a password, will return a true/false response indicating if the provided password matches the customer’s current password. This endpoint is useful if you want to power the login of another system using BigCommerce’s stored customer accounts, or as a safe way to migrate passwords to another system (by checking them against BigCommerce’s password, and if correct, storing it in another system securely.)If the password matches what’s stored against the customer account, the response will be:
+
+        ```json
+        {
+            "success": "true"
+        }
+        ```
+        If the password does NOT match, the response will instead be:
+
+        ```json
+        {
+            "success": "false"
+        }
+        ```
+      operationId: validateCustomerPassword
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Id of the customer
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: String to run against customer password. Will return a true or false.
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validatePassword'
+              example:
+                success: false
+      deprecated: true
+      x-codegen-request-body-name: body
+  '/stores/{store_hash}/v2/customers/{customer_id}/addresses':
+    get:
+      tags:
+        - Customer Addresses
+      summary: Get All Customer Addresses
+      description: |-
+        Returns a list of *Customer Addresses*. Returns the addresses belonging to a customer. Default sorting is by address id, from lowest to highest. 
+        The maximum limit is 250. If a limit isn’t provided, up to 50 `customer_addresses` are returned by default.
+      operationId: getAllCustomerAddresses
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: ID of the customer
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: page
+          in: query
+          description: Number of pages
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: limit
+          in: query
+          description: Count per page
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customerAddress_Full'
+      deprecated: true
+    post:
+      tags:
+        - Customer Addresses
+      summary: Create a Customer Address
+      description: |-
+        Creates a new *Customer Address*. (Note: The “state” property cannot be null. As a workaround for addresses that include no state/province string, pass a space as the “state” value.)
+
+        **Required Fields**
+        *   first_name
+        *   last_name
+        *   phone
+        *   street_1
+        *   city
+        *   state
+        *   zip
+        *   country
+
+        **Read Only Fields**
+        *   id
+        *   country_iso2
+      operationId: createACustomerAddress
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: ID of the customer
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/customerAddress_Base'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customerAddress_Full'
+      deprecated: true
+    delete:
+      tags:
+        - Customer Addresses
+      summary: Delete Customer Address
+      description: 'By default, it deletes all *Customer Addresses*.'
+      operationId: deleteAllCustomerAddresses
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Id of the customer
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: page
+          in: query
+          description: Number of pages
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: limit
+          in: query
+          description: Count per page
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+      responses:
+        '204':
+          description: ''
+          content: {}
+      deprecated: true
+  '/stores/{store_hash}/v2/customers/{customer_id}/addresses/{customer_address_id}':
+    get:
+      tags:
+        - Customer Addresses
+      summary: Get a Customer Address
+      description: Returns a *Customer Address*.
+      operationId: getACustomerAddress
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_address_id
+          in: path
+          description: ID of the customer address
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: customer_id
+          in: path
+          description: 'ID of the customer '
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: page
+          in: query
+          description: Number of pages
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: limit
+          in: query
+          description: Count per page
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customerAddress_Full'
+      deprecated: true
+    put:
+      tags:
+        - Customer Addresses
+      summary: Update a Customer Address
+      description: |-
+        Updates a *Customer Address*. 
+        **Read Only Fields**
+        *   id
+        *   country_iso2
+      operationId: updateACustomerAddress
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: ID of this customer
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: customer_address_id
+          in: path
+          description: ID of the customer address.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Customer Address
+              required:
+                - city
+                - country
+                - first_name
+                - last_name
+                - phone
+                - state
+                - street_1
+                - zip
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: ID of this customer address. READ-ONLY
+                  example: 3
+                customer_id:
+                  type: integer
+                  description: ID of the associated customer.
+                  example: 5
+                first_name:
+                  type: string
+                  description: The customer’s first name.
+                  example: Jane
+                last_name:
+                  type: string
+                  description: The customer’s last name.
+                  example: Doe
+                company:
+                  type: string
+                  description: The customer’s company name.
+                  example: BigCommerce
+                street_1:
+                  type: string
+                  description: 'The customer’s street address, line 1.'
+                  example: 123 Main Street
+                street_2:
+                  type: string
+                  description: 'The customer’s street address, line 2.'
+                city:
+                  type: string
+                  description: The customer’s city/town/suburb.
+                  example: Austin
+                state:
+                  type: string
+                  description: 'The customer’s state/province. Do not abbreviate the state; spell out the entire word, e.g.: California. (Cannot be null. As a workaround for addresses that include no state/province string, pass a space as the “state” value.)'
+                  example: Texas
+                zip:
+                  type: string
+                  description: The customer’s ZIP or postal code.
+                  example: '78726'
+                country:
+                  type: string
+                  description: The customer’s country. Must be the full country name.
+                  example: United States
+                country_iso2:
+                  type: string
+                  description: 2-letter ISO Alpha-2 code for the customer’s country. READ-ONLY
+                  example: US
+                phone:
+                  type: string
+                  description: The customer’s phone number.
+                  example: 123-345-7890
+                address_type:
+                  type: string
+                  example: residential
+                  enum:
+                    - residential
+                    - commercial
+              example:
+                id: 3
+                customer_id: 5
+                first_name: Jane
+                last_name: Doe
+                company: BigCommerce
+                street_1: 123 Main Street
+                street_2: ''
+                city: Austin
+                state: Texas
+                zip: '78726'
+                country: United States
+                country_iso2: US
+                phone: 123-345-7890
+                address_type: residential
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customerAddress_Full'
+      deprecated: true
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+        - Customer Addresses
+      summary: Delete a Customer Address
+      description: Deletes a *Customer Address*.
+      operationId: deletesACustomerAddress
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Id of the customer
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: customer_address_id
+          in: path
+          description: Id of the customer address.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: ''
+          content: {}
+      deprecated: true
+  '/stores/{store_hash}/v2/customers/{customer_id}/addresses/count':
+    get:
+      tags:
+        - Customer Addresses
+      summary: Get a Count of Customer Addresses
+      description: Returns a count of addresses for a customer.
+      operationId: getACountofCustomerAddresses
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_id
+          in: path
+          description: Id of the customer
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: page
+          in: query
+          description: Number of pages
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: limit
+          in: query
+          description: Count per page
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/count_Full'
+              example:
+                count: 27
+      deprecated: true
+  '/stores/{store_hash}/v2/customer_groups':
+    get:
+      tags:
+        - Customer Groups
+      summary: Get All Customer Groups
+      description: 'Returns a list of *Customer Groups*. Default sorting is by customer-group id, from lowest to highest.'
+      operationId: getAllCustomerGroups
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: page
+          in: query
+          description: Number of pages
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: limit
+          in: query
+          description: Count per page
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: name
+          in: query
+          description: 'Filter customer groups by exact name match. Can use `name:like` to filter using a fuzzy matching method. This is good for implementing search.'
+          schema:
+            type: string
+        - name: is_default
+          in: query
+          description: If customers who signup are added to this group by default
+          schema:
+            type: boolean
+        - name: is_group_for_guests
+          in: query
+          description: If the groups is for guests. There can only be one customer group for guests at a time.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customerGroup_Full'
+    post:
+      tags:
+        - Customer Groups
+      summary: Create a Customer Group
+      description: |-
+        Creates a *Customer Group*. 
+        **Required Fields**
+        * name
+      operationId: createACustomerGroup
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: X-Auth-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/customerGroup_Post'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customerGroup_Full'
+        '207':
+          description: 'The customer group was created, but the sitewide discount update failed. You may retry the request.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    minLength: 1
+                    type: string
+                description: ''
+    delete:
+      tags:
+        - Customer Groups
+      summary: Delete Customer Groups
+      description: |-
+        By default, it deletes all *Customer Groups*. 
+        All existing customers are unassigned from the group when it is deleted.
+      operationId: deleteAllCustomerGroups
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '204':
+          description: ''
+          content: {}
+  '/stores/{store_hash}/v2/customer_groups/{customer_group_id}':
+    get:
+      tags:
+        - Customer Groups
+      summary: Get a Customer Group
+      description: Returns a *Customer Group*.
+      operationId: getACustomerGroup
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_group_id
+          in: path
+          description: Id of the customer group
+          required: true
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: page
+          in: query
+          description: Number of pages
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: limit
+          in: query
+          description: Count per page
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: number
+        - name: name
+          in: query
+          description: Name of the customer groups
+          schema:
+            type: string
+        - name: is_default
+          in: query
+          description: If customers who signup are added to this group by default
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customerGroup_Full'
+    put:
+      tags:
+        - Customer Groups
+      summary: Update a Customer Group
+      description: |-
+        Updates a *Customer Group*.
+
+        **Notes**
+
+        Any combination of fields can be updated at once. Discount rules are treated in bulk. The entire set of rules is overwritten when a request is sent.
+      operationId: updateACustomerGroup
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_group_id
+          in: path
+          description: Id of the customer group
+          required: true
+          schema:
+            type: integer
+        - name: Accepts
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/customerGroup_Full'
+        required: false
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customerGroup_Full'
+        '207':
+          description: 'The customer group was updated, but the sitewide discount update failed. You may retry the request.'
+          content:
+            application/json:
+              schema:
+                required:
+                  - message
+                  - status
+                type: object
+                properties:
+                  status:
+                    type: number
+                  message:
+                    minLength: 1
+                    type: string
+                description: ''
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+        - Customer Groups
+      summary: Delete a Customer Group
+      description: |-
+        Deletes a *Customer Group*. 
+        **Notes**
+        All existing customers are unassigned from the group when it is deleted.
+      operationId: deleteACustomerGroup
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customer_group_id
+          in: path
+          description: The id of the customer group.
+          required: true
+          schema:
+            exclusiveMaximum: false
+            exclusiveMinimum: false
+            type: integer
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '204':
+          description: ''
+          content: {}
+  '/stores/{store_hash}/v2/customer_groups/count':
+    get:
+      tags:
+        - Customer Groups
+      summary: Get a Count of Customer Groups
+      description: 'Returns a count of all *Customer Groups*. '
+      operationId: getACountOfCustomerGroups
+      parameters:
+        - name: store_hash
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+            default: application/json
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/count_Full'
+              example:
+                count: 27
+components:
+  schemas:
+    billingAddress_Full:
+      title: billingAddress_Full
+      type: object
+      properties:
+        first_name:
+          type: string
+          description: ''
+          example: Jane
+        last_name:
+          type: string
+          description: ''
+          example: Doe
+        company:
+          type: string
+          description: ''
+        street_1:
+          type: string
+          description: ''
+          example: 123 Main Street
+        street_2:
+          type: string
+          description: ''
+        city:
+          type: string
+          description: ''
+          example: Austin
+        state:
+          type: string
+          description: ''
+          example: TX
+        zip:
+          type: string
+          description: ''
+          example: '12345'
+        country:
+          type: string
+          description: ''
+          example: United States
+        country_iso2:
+          type: string
+          description: ''
+          example: US
+        phone:
+          type: string
+          description: ''
+        email:
+          type: string
+          description: ''
+          example: janedoe@example.com
+        form_fields:
+          type: array
+          description: ''
+          items:
+            title: Form Fields
+            type: object
+            properties:
+              name:
+                type: string
+                description: Name of the form field
+                example: License Id
+              value:
+                type: string
+                description: Value of the form field
+                example: 123BAF
+      x-internal: false
+    customerFormFields:
+      title: customerFormFields
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the form field
+          example: License Id
+        value:
+          type: string
+          description: Value of the form field
+          example: 123BAF
+      x-internal: false
+    shippingAddress_Full:
+      title: shippingAddress_Full
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL of the shipping address for api requests
+          example: 'https://api.bigcommerce.com/stores/{store_hash}/v2/orders/129/shippingaddresses'
+        resource:
+          type: string
+          description: ''
+          example: /orders/129/shippingaddresses
+      x-internal: false
+    customer_Full:
+      title: customer_Full
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: Unique numeric ID of this customer. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+              example: 1
+            date_created:
+              type: string
+              description: Date on which the customer registered from the storefront or was created in the control panel. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+            date_modified:
+              type: string
+              description: |
+                Date on which the customer updated their details in the storefront or was updated in the control panel. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+        - $ref: '#/components/schemas/customer_Base'
+      x-internal: false
+      x-examples: {}
+    categoryAccessLevel_Full:
+      title: categoryAccessLevel_Full
+      type: object
+      properties:
+        type:
+          type: string
+          description: |-
+            + `all` - Customers can access all categories
+             + `specific`  - Customers can access a specific list of categories
+            + `none` - Customers are prevented from viewing any of the categories in this group.
+          enum:
+            - all
+            - specific
+            - none
+        categories:
+          type: array
+          description: Is an array of category IDs and should be supplied only if `type` is specific.
+          example:
+            - 18
+            - 19
+            - 23
+            - 34
+          items:
+            type: integer
+      x-internal: false
+    count_Full:
+      title: count_Full
+      type: object
+      properties:
+        count:
+          type: number
+          description: ''
+          example: 27
+      example:
+        count: 27
+      x-internal: false
+    customerAddress_Full:
+      title: customerAddress_Full
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: ID of this customer address. READ-ONLY
+              example: 3
+            country_iso2:
+              type: string
+              description: 2-letter ISO Alpha-2 code for the customer’s country. READ-ONLY
+              example: US
+        - $ref: '#/components/schemas/customerAddress_Base'
+      x-internal: false
+    customerGroup_Full:
+      title: customerGroup_Full
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Id of the customer group
+          example: 1
+        name:
+          type: string
+          description: Name of the group
+          example: Wholesale
+        is_default:
+          type: boolean
+          description: Determines whether new customers are assigned to this group by default.
+          example: false
+        category_access:
+          $ref: '#/components/schemas/categoryAccessLevel_Full'
+        discount_rules:
+          type: array
+          description: A collection of discount rules that are automatically applied to customers who are members of the group
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - price_list
+                  - all
+                  - category
+                  - product
+              method:
+                type: string
+                enum:
+                  - percent
+                  - fixed
+                  - price
+              amount:
+                type: string
+                description: A float that specifies the value applied to the price modified
+                example: '"5.0000" (Float, Float as String, Integer)'
+              price_list_id:
+                type: integer
+                description: 'If a customer group is assigned to a price list,`method` and `amount` are not shown. `type` and `price_list_id` are returned.'
+                example: 3
+        is_group_for_guests:
+          type: boolean
+          description: If the groups is for guests. There can only be one customer group for guests at a time.
+      description: 'When creating a customer group category discount using the API it defaults to "products in this category and its subcategories". In the [Control Panel](https://support.bigcommerce.com/s/article/Customer-Groups#pricing) this can be changed to either "products in this category only" or "products in this category and its subcategories". There are currently no settings to change this behavior via API.'
+      x-internal: false
+    country_Full:
+      title: country_Full
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Id of the country.
+          example: 13
+        country:
+          type: string
+          description: Country name.
+          example: Australia
+        country_iso2:
+          type: string
+          description: 2-letter country code.
+          example: AU
+        country_iso3:
+          type: string
+          description: 3-letter country code.
+          example: AUS
+        states:
+          title: States Resource
+          type: object
+          properties:
+            url:
+              type: string
+              description: ''
+              example: 'https://api.bigcommerce.com/stores/{store_hash}/v2/countries/13/states'
+            resource:
+              type: string
+              description: ''
+              example: /countries/13/states
+      example:
+        id: 13
+        country: Australia
+        country_iso2: AU
+        country_iso3: AUS
+        states:
+          url: 'https://api.bigcommerce.com/stores/{store_hash}/v2/countries/13/states'
+          resource: /countries/13/states
+      x-internal: false
+    statesResource_Full:
+      title: statesResource_Full
+      type: object
+      properties:
+        url:
+          type: string
+          description: ''
+          example: 'https://api.bigcommerce.com/stores/{store_hash}/v2/countries/13/states'
+        resource:
+          type: string
+          description: ''
+          example: /countries/13/states
+      x-internal: false
+    state_Full:
+      title: state_Full
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Numeric ID of the state/province.
+          example: 208
+        state:
+          type: string
+          description: Name of the state/province.
+          example: Australian Capital Territory
+        state_abbreviation:
+          type: string
+          description: Abbreviation for the state/province.
+          example: ACT
+        country_id:
+          type: integer
+          description: Numeric ID of the state’s/province’s associated country.
+          example: 13
+      x-internal: false
+    customerGroup_Post:
+      title: customerGroup_Post
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the group
+          example: Wholesale
+        is_default:
+          type: boolean
+          description: Determines whether new customers are assigned to this group by default.
+          example: false
+        category_access:
+          $ref: '#/components/schemas/categoryAccessLevel_Full'
+        discount_rules:
+          type: array
+          description: A collection of discount rules that are automatically applied to customers who are members of the group
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - price_list
+                  - all
+                  - category
+                  - product
+              method:
+                type: string
+                enum:
+                  - percent
+                  - fixed
+                  - price
+              amount:
+                type: string
+                description: A float that specifies the value applied to the price modified
+                example: '"5.0000" (Float, Float as String, Integer)'
+              price_list_id:
+                type: integer
+                description: 'If a customer group is assigned to a price list,`method` and `amount` are not shown. `type` and `price_list_id` are returned.'
+                example: 3
+        is_group_for_guests:
+          type: boolean
+          description: If the groups is for guests. There can only be one customer group for guests at a time.
+      description: 'When creating a customer group category discount using the API it defaults to "products in this category and its subcategories". In the [Control Panel](https://support.bigcommerce.com/s/article/Customer-Groups#pricing) this can be changed to either "products in this category only" or "products in this category and its subcategories". There are currently no settings to change this behavior via API.'
+      x-internal: false
+    validatePassword:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Will return `true` or `false`
+      x-internal: false
+    customer_Base:
+      title: customer_Base
+      type: object
+      x-internal: false
+      properties:
+        _authentication:
+          type: object
+          description: 'Not returned in any responses, but accepts up to two fields allowing you to set the customer’s password. If a password is not supplied, it is generated automatically. For further information about using this object, please see the Customers resource documentation.'
+          properties:
+            force_reset:
+              type: boolean
+            password:
+              type: string
+            password_confirmation:
+              type: string
+        company:
+          type: string
+          description: The name of the company for which the customer works.
+          example: BigCommerce
+        first_name:
+          type: string
+          description: First name of the customer.
+          example: Jane
+        last_name:
+          type: string
+          description: Last name of the customer.
+          example: Doe
+        email:
+          type: string
+          description: Email address of the customer.
+          example: janedoe@example.com
+        phone:
+          type: string
+          description: Phone number of the customer.
+          example: '1234567890'
+        store_credit:
+          type: string
+          description: 'The amount of credit the customer has. (Float, Float as String, Integer)'
+          example: '0'
+        registration_ip_address:
+          type: string
+          description: The customer’s IP address when they signed up.
+          example: 12.345.678.910
+        customer_group_id:
+          type: integer
+          description: The group to which the customer belongs.
+          example: 2
+        notes:
+          type: string
+          description: Store-owner notes on the customer.
+        tax_exempt_category:
+          type: string
+          description: 'If applicable, the tax-exempt category of the shopper’s customer account. You can apply a tax-exempt category to multiple customers. This code should match the exemption codes provided by the third-party integration.'
+        accepts_marketing:
+          type: boolean
+          description: 'If the customer accepts product review emails or abandon cart emails. Read-Only. '
+          example: true
+          readOnly: true
+        addresses:
+          title: Address Field Resource
+          type: object
+          properties:
+            url:
+              type: string
+              description: Full URL of where the resource is located.
+              example: 'https://api.bigcommerce.com/stores/{store_hash}/v2/customers/5/addresses'
+            resource:
+              type: string
+              description: Resource being accessed.
+              example: /customers/5/addresses
+        form_fields:
+          type: array
+          description: Array of custom fields. This is a READ-ONLY field; do not set or modify its value in a POST or PUT request.
+          nullable: true
+          items:
+            title: Form Fields
+            type: object
+            properties:
+              name:
+                type: string
+                description: Name of the form field
+                example: License Id
+              value:
+                type: string
+                description: Value of the form field
+                nullable: true
+        reset_pass_on_login:
+          type: boolean
+          description: Force a password change on next login.
+          example: false
+      required:
+        - first_name
+        - last_name
+        - email
+    customerAddress_Base:
+      title: customerAddress_Base
+      required:
+        - city
+        - country
+        - first_name
+        - last_name
+        - phone
+        - state
+        - street_1
+        - zip
+      type: object
+      properties:
+        customer_id:
+          type: integer
+          description: ID of the associated customer.
+          example: 5
+        first_name:
+          type: string
+          description: The customer’s first name.
+          example: Jane
+        last_name:
+          type: string
+          description: The customer’s last name.
+          example: Doe
+        company:
+          type: string
+          description: The customer’s company name.
+          example: BigCommerce
+        street_1:
+          type: string
+          description: 'The customer’s street address, line 1.'
+          example: 123 Main Street
+        street_2:
+          type: string
+          description: 'The customer’s street address, line 2.'
+        city:
+          type: string
+          description: The customer’s city/town/suburb.
+          example: Austin
+        state:
+          type: string
+          description: 'The customer’s state/province. Do not abbreviate the state; spell out the entire word, e.g.: California. (Cannot be null. As a workaround for addresses that include no state/province string, pass a space as the “state” value.)'
+          example: Texas
+        zip:
+          type: string
+          description: The customer’s ZIP or postal code.
+          example: '78726'
+        country:
+          type: string
+          description: The customer’s country. Must be the full country name.
+          example: United States
+        phone:
+          type: string
+          description: The customer’s phone number.
+          example: 123-345-7890
+        address_type:
+          type: string
+          example: residential
+          enum:
+            - residential
+            - commercial
+  parameters:
+    customer_id:
+      name: customer_id
+      in: path
+      description: ID of the customer
+      required: true
+      schema:
+        type: integer
+    customer_group_id:
+      name: customer_group_id
+      in: path
+      description: ID of the customer group
+      required: true
+      schema:
+        type: integer
+    customer_address_id:
+      name: customer_address_id
+      in: path
+      description: ID of the customer address.
+      required: true
+      schema:
+        type: integer
+    is_group_for_guests:
+      name: is_group_for_guests
+      in: query
+      description: If the groups is for guests. There can only be one customer group for guests at a time.
+      schema:
+        type: boolean
+  securitySchemes:
+    X-Auth-Token:
+      type: apiKey
+      description: |-
+        ### OAuth Scopes
+        |  **UI Name** | **Permission** | **Parameter** |
+        | --- | --- | --- |
+        |  Customers | modify | `store_v2_customers` |
+        |  Customers | read-only | `store_v2_customers_read_only` |
+        ### Headers
+        |Header|Parameter|Description|
+        |-|-|-|
+        |`X-Auth-Token`|`access_token `|Obtained by creating an API account or installing an app in a BigCommerce control panel.|
+        ### Example
+        ```http
+        GET /stores/{store_hash}/v3/catalog/summary
+        host: api.bigcommerce.com
+        Content-Type: application/json
+        X-Auth-Token: {access_token}
+        ```
+        * For more information on Authenticating BigCommerce APIs, see: [Authentication](/api-docs/getting-started/authentication). 
+      name: X-Auth-Token
+      in: header
+x-stoplight:
+  docs:
+    includeDownloadLink: true
+    showModels: false

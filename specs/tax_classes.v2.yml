@@ -1,0 +1,208 @@
+openapi: 3.0.1
+info:
+  title: Tax Classes
+  contact: {}
+  description: Manage tax calculations applied to sales. Tax classes are used to apply
+    different tax rates for specific types of products and orders. This API is read
+    only. Classes must be set using the [Control Panel](https://forum.bigcommerce.com/s/article/Taxes-Video#).
+  version: ""
+servers:
+- url: https://api.bigcommerce.com
+security:
+- X-Auth-Token: []
+tags:
+- name: Taxes
+paths:
+  /stores/{store_hash}/v2/tax_classes:
+    get:
+      tags:
+      - Taxes
+      summary: Get All Tax Classes
+      description: |-
+        Returns a list of all *Tax Classes* in a store.
+
+        Default sorting is by tax-class id, from lowest to highest.
+      operationId: getAllTaxClasses
+      parameters:
+      - name: store_hash
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Accept
+        in: header
+        required: true
+        schema:
+          type: string
+          default: application/json
+      - name: Content-Type
+        in: header
+        required: true
+        schema:
+          type: string
+          default: application/json
+      - name: page
+        in: query
+        description: Optional filter param. Number of pages.
+        schema:
+          maximum: 50
+          exclusiveMaximum: false
+          exclusiveMinimum: false
+          type: number
+      - name: limit
+        in: query
+        description: Optional filter param. Number of items per page
+        schema:
+          maximum: 250
+          exclusiveMaximum: false
+          exclusiveMinimum: false
+          type: number
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/taxClass_Full'
+              example:
+              - id: '1'
+                name: Non-Taxable Products
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+              - id: '2'
+                name: Shipping
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+              - id: '3'
+                name: Gift Wrapping
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+            Response Schema:
+              example:
+              - id: proident irure consequat anim
+                name: sed non commodo et tempor
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+              - id: consequat voluptate
+                name: sunt ex
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+      x-unitTests: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /stores/{store_hash}/v2/tax_classes/{id}:
+    get:
+      tags:
+      - Taxes
+      summary: Get a Tax Class
+      description: Returns a single *Tax Class*.
+      operationId: getATaxClass
+      parameters:
+      - name: store_hash
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: Id of the tax class.
+        required: true
+        schema:
+          type: integer
+      - name: Accept
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: Content-Type
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/taxClass_Full'
+              example:
+                id: '1'
+                name: Shipping
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+            Response Schema:
+              example:
+                id: ut pariatur eiusmod non
+                name: dolore nulla Duis Ut ea
+                created_at: 1973-01-20T21:34:57.903Z
+                updated_at: 1990-12-30T00:29:23.515Z
+      x-unitTests: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+components:
+  schemas:
+    taxClass_Full:
+      title: taxClass_Full
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique numerical ID of the tax class. A read-only value
+            which is automatically assigned and increments sequentially.
+          example: "1"
+        name:
+          type: string
+          description: The name of the tax class.
+          example: Shipping
+        created_at:
+          type: string
+          description: Date and time of the tax class' creation. Read-Only.
+          format: date-time
+          example: 2018-05-07T20:14:17Z
+        updated_at:
+          type: string
+          description: Date and time when the tax class was last updated. Read-Only.
+          format: date-time
+          example: 2018-05-07T20:14:17Z
+      example:
+        id: '1'
+        name: Shipping
+        created_at: 1973-01-20T21:34:57.903Z
+        updated_at: 1990-12-30T00:29:23.515Z
+      x-internal: false
+  securitySchemes:
+    X-Auth-Token:
+      type: apiKey
+      description: |-
+        ### OAuth Scopes
+        |  **UI Name** | **Permission** | **Parameter** |
+        | --- | --- | --- |
+        |  Information & Settings | modify | `store_v2_information` |
+        |  Information & Settings | read-only | `store_v2_information_read_only` |
+        ### Headers
+        |Header|Parameter|Description|
+        |-|-|-|
+        |`X-Auth-Token`|`access_token `|Obtained by creating an API account or installing an app in a BigCommerce control panel.|
+        ### Example
+        ```http
+        GET /stores/{store_hash}/v3/catalog/summary
+        host: api.bigcommerce.com
+        Content-Type: application/json
+        X-Auth-Token: {access_token}
+        ```
+        * For more information on Authenticating BigCommerce APIs, see: [Authentication](/api-docs/getting-started/authentication). 
+      name: X-Auth-Token
+      in: header
+x-stoplight:
+  docs:
+    includeDownloadLink: true
+    showModels: false
