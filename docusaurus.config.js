@@ -10,7 +10,7 @@ const config = {
   tagline: 'BigCommerce Developer Center',
   url: 'https://developer.bigcommerce.com',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   // favicon: 'img/favicon.ico',
 
